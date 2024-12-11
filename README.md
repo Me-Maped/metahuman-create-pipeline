@@ -39,7 +39,7 @@
 #### 脸部修改
 1. 点击插件上基础操作部分中的`打开DNA文件`按钮,选择Bridge下载过的MetaHumanDNA,建议在此之前拷贝一份 ![ReadDNA](img/read_dna.png)
 2. 点击`保存顶点关节位置信息`按钮,保存的文件你会在所选择的工作文件夹下的temp中看到 ![PositionFile](img/position_file.png)
-3. 选择lod0组中需要修改的Mesh,并导出为obj文件,例如修改脸型,即选中head_lod0_mesh,点击文件导出当前选择.导出后的obj文件即可去到其他工具如ZBrush、Blender中修改（也可直接在maya里复制一个进行修改。！！！注意不要其拓扑，只做脸型修改）修改完成后仍保存为obj即可 ![OBJExport](img/obj_export.png)
+3. 选择lod0组中需要修改的Mesh,并导出为obj文件,例如修改脸型,即选中head_lod0_mesh,点击文件导出当前选择.导出后的obj文件即可去到其他工具如ZBrush、Blender中修改（也可直接在maya里复制一个进行修改。！！！注意不要其拓扑，只做脸型修改，使用其他软件修改导出后不要进行其他优化操作，例如使用Max修改完，导出的OBJ文件要取消勾选顶点和面的优化！！！）修改完成后仍保存为obj即可 ![OBJExport](img/obj_export.png)
 4. 将修改后的脸部模型拷贝至当前已打开的DNA下，并选中模型，点击`脸部模型匹配`按钮,你会看到对应面部的mesh已经修改,同时在工作空间里的dna目录下可以看到新增了一个MetaHuman_mesh.dna文件 ![FixMesh](img/fix_mesh.png)
 5. 点击`脸部关节匹配`按钮,将关节位置与模型匹配,你会看到关节位置与mesh匹配,同时与上相同目录下会新增一个MetaHuman_jnt.dna文件 ![JointChange](img/joint_change.png)
 6. 如果需要进行脸部骨骼调整或面部表情夸张程度调整，如脖子长度、嘴角最大上扬程度等，可以点击`允许骨骼编辑`按钮进入骨骼编辑模式，骨骼修改通过拉伸对应骨骼，表情夸张程度通过调节MetaHuman控制面板。修改完成后点击`保存骨骼编辑`将骨骼信息写入DNA，在工作空间里的dna目录下会生成一个MetaHuman_rig.dna文件。

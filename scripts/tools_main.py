@@ -121,6 +121,15 @@ aas_path = f"{DATA_DIR}/mh4/additional_assemble_script.py"
 # Face Consts
 up_axis = "z"
 head_mesh = "head_lod0_mesh"
+teeth_mesh="teeth_lod0_mesh"
+saliva_mesh = "saliva_lod0_mesh"
+eyeLeft_mesh = "eyeLeft_lod0_mesh"
+eyeRight_mesh = "eyeRight_lod0_mesh"
+eyeshell_mesh = "eyeshell_lod0_mesh"
+eyelashes_mesh = "eyelashes_lod0_mesh"
+eyeEdge_mesh = "eyeEdge_lod0_mesh"
+cartilage_mesh = "cartilage_lod0_mesh"
+
 facial_root_joints = ["FACIAL_C_FacialRoot", "FACIAL_C_Neck1Root", "FACIAL_C_Neck2Root"]
 neck_joints = ["head", "neck_01", "neck_02"]
 root_joint = "spine_04"
@@ -796,25 +805,6 @@ def btn_save_positions_in_file(*args):
     reader = read_dna(opening_dna)
     find_and_save_joint_positions_in_file(reader,surface_joints,joint_position_file)
     print("Success!")
-
-# 模型匹配到原脸部
-def btn_add_model_into_scene(*args):
-    check_opening_dna_valid()
-    selection = cmds.ls(selection=True)
-    if not selection: raise RuntimeWarning("请选中修改后的头部模型")
-    head_export_mesh = selection[0]
-    reader = read_dna(opening_dna)
-    calibrated = DNACalibDNAReader(reader)
-    run_vertices_command(
-        calibrated, 
-        get_mesh_vertex_positions_from_scene(head_mesh),
-        get_mesh_vertex_positions_from_scene(head_export_mesh),
-        0
-    )
-    save_dna(calibrated,mesh_dna)
-    show_meshes(mesh_dna)
-    update_opening_dna_field(mesh_dna)
-    print("Success!")
 # 自动匹配关节
 def btn_snap_to_vertices(*args):
     check_opening_dna_valid()
@@ -968,7 +958,6 @@ def btn_save_scaled_face(scaleFactor):
 
 # 导出身体FBX
 def btn_export_body_fbx(*args):
-    check_opening_dna_valid()
     scaled_body_file = select_file("*.ma",cap="请选择缩放过身体工程文件")
     if not scaled_body_file: 
         print('Cancel!')
@@ -1039,6 +1028,60 @@ def update_opening_dna_field(openDna = None):
     if openDna: opening_dna = openDna
     cmds.textFieldButtonGrp("opening_dna_field",edit=True,text=opening_dna)
 
+# 模型匹配窗口
+match_mesh_reader = None
+match_mesh_calibrated = None
+def btn_open_match_window(*args):
+    global match_mesh_reader, match_mesh_calibrated
+    check_opening_dna_valid()
+    match_mesh_reader = None
+    match_mesh_calibrated = None
+    match_mesh_reader = read_dna(opening_dna)
+    match_mesh_calibrated = DNACalibDNAReader(match_mesh_reader)
+
+    windowName = "matchWindow"
+    if cmds.window(windowName, exists=True):
+        cmds.deleteUI(windowName)
+    cmds.window(windowName, title='Match Window')
+    cmds.columnLayout()
+    cmds.button(l='Head',c=lambda *args: match_mesh_by_selection(head_mesh,0))
+    cmds.button(l='Teeth',c=lambda *args: match_mesh_by_selection(teeth_mesh,1))
+    cmds.button(l='Saliva',c=lambda *args: match_mesh_by_selection(saliva_mesh,2))
+    cmds.button(l='Eye Left',c=lambda *args: match_mesh_by_selection(eyeLeft_mesh,3))
+    cmds.button(l='Eye Right',c=lambda *args: match_mesh_by_selection(eyeRight_mesh,4))
+    cmds.button(l='Eye Shell',c=lambda *args: match_mesh_by_selection(eyeshell_mesh,5))
+    cmds.button(l='Eye Lashes',c=lambda *args: match_mesh_by_selection(eyelashes_mesh,6))
+    cmds.button(l='Eye Edge',c=lambda *args: match_mesh_by_selection(eyeEdge_mesh,7))
+    cmds.button(l='Cartilage',c=lambda *args: match_mesh_by_selection(cartilage_mesh,8))
+    cmds.button(l='完成并保存',c=save_match_dna)
+    cmds.showWindow(windowName)
+
+# 模型匹配到原脸部
+def match_mesh_by_selection(matchedMesh,meshIndex):
+    if not match_mesh_calibrated:
+        return RuntimeError("请关闭匹配窗口并重新打开")
+    selection = cmds.ls(selection=True)
+    if not selection: raise RuntimeWarning("请选中修改后的头部模型")
+    select_export_mesh = selection[0]
+    run_vertices_command(
+        match_mesh_calibrated, 
+        get_mesh_vertex_positions_from_scene(matchedMesh),
+        get_mesh_vertex_positions_from_scene(select_export_mesh),
+        meshIndex
+    )
+    print("Success!")
+
+# 保存模型匹配的DNA
+def save_match_dna(*args):
+    global match_mesh_reader,match_mesh_calibrated
+    save_dna(match_mesh_calibrated,mesh_dna)
+    show_meshes(mesh_dna)
+    update_opening_dna_field(mesh_dna)
+    match_mesh_reader = None
+    match_mesh_calibrated = None
+    cmds.deleteUI("matchWindow")
+    print("Success!")
+
 # ================================主UI=======================================
 def mainGui():
     windowName = 'DNA_Tool'
@@ -1061,7 +1104,7 @@ def mainGui():
     
     cmds.text(l = '============脸部修改操作==============')
     cmds.button(l = '保存顶点关节位置信息', c=btn_save_positions_in_file)
-    cmds.button(l = '脸部模型匹配', c=btn_add_model_into_scene)
+    cmds.button(l = '脸部模型匹配', c=btn_open_match_window)
     cmds.button(l = '脸部关节匹配', c=btn_snap_to_vertices)
     cmds.button(l='允许骨骼编辑',c=btn_open_rig_modify)
     cmds.button(l = '保存骨骼编辑', c=btn_save_rig_modify)
